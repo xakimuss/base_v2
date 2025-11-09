@@ -1,0 +1,74 @@
+---
+    - name: Установка переменных окружения
+      ansible.builtin.shell: |
+        echo 'export DEBIAN_FRONTEND=noninteractive' >> /etc/environment
+        echo 'export NEEDRESTART_MODE=a' >> /etc/environment
+      args:
+        executable: /bin/bash
+
+    - name: Установить московский часовой пояс
+      become: true
+      ansible.builtin.command: timedatectl set-timezone Europe/Moscow
+
+    - name: Обновление apt и системы
+      apt:
+        update_cache: true
+        upgrade: dist
+
+    - name: Установка базовых пакетов
+      apt:
+        name: "{{ base_packages }}"
+        state: present
+
+    - name: Удаление needrestart (если установлен)
+      apt:
+        name: needrestart
+        state: absent
+      ignore_errors: true
+
+    - name: Установка зависимостей для Docker
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Создание директории /etc/apt/keyrings
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: add GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Добавление Docker репозитория
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+   
+    - name: Обновление apt после добавления Docker репо
+      apt:
+        update_cache: true
+
+    - name: Установка Docker и плагинов
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Проверка запуска Docker
+      shell: systemctl is-active docker
+      register: docker_status
+      changed_when: false
+
+    - name: Показать статус Docker
+      debug:
+        msg: "Docker status: {{ docker_status.stdout }}"

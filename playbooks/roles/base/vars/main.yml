@@ -1,0 +1,38 @@
+---
+base_env_vars:
+  DEBIAN_FRONTEND: noninteractive
+  NEEDRESTART_MODE: a
+
+base_packages:
+  - apt-utils
+  - dialog
+  - curl
+  - git
+  - jq
+  - unzip
+  - build-essential
+  - make
+  - gcc
+  - screen
+  - python3-pip
+  - ncdu
+  - mc
+
+users:
+  - name: admin
+    password: "admin"
+  - name: drosera
+    password: "drosera"
+  - name: pipe
+    password: "pipe"
+  - name: gensyn
+    password: "gensyn"
+  - name: nexus
+    password: "nexus"
+  - name: gaianet
+    password: "gaianet"
+  - name: cysic
+    password: "cysic"
+
+
+

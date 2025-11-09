@@ -1,0 +1,13 @@
+---
+    - name: Прочитать публичный ключ локально
+      slurp:
+        src: /root/.ssh/id_ed25519.pub
+      register: pubkey
+      delegate_to: localhost
+      run_once: true
+
+    - name: Добавить публичный ключ в authorized_keys пользователей
+      authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ pubkey.content | b64decode }}"
+      loop: "{{ users }}"

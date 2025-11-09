@@ -1,0 +1,6 @@
+---
+#- import_tasks: base_setup.yml
+- import_tasks: ssh.yml #закрывает вход для рута и дает войти только админу
+#- import_tasks: adduser.yml #добавляет юзеров для кажой нодв
+#- import_tasks: ssh-key.yml #обменивается ssh ключами 
+#- import_tasks: swap.yml

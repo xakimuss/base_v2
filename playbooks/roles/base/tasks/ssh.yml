@@ -1,0 +1,42 @@
+---
+- name: Настройка SSH для безопасности
+  hosts: all
+  become: true
+  vars:
+    admin_user: admin  # имя администратора, который должен заходить по паролю
+
+  tasks:
+    - name: "Настроить sshd_config для root: только по ключу"
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+        state: present
+
+    - name: Отключить парольную аутентификацию по умолчанию
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Разрешить доступ только этим пользователям
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?AllowUsers'
+        line: "AllowUsers {{ admin_user }}"
+        state: present
+
+    - name: Включить парольную аутентификацию только для admin пользователя
+      blockinfile:
+        path: /etc/ssh/sshd_config
+        marker: "# {mark} ANSIBLE MANAGED BLOCK for admin ssh settings"
+        block: |
+          Match User {{ admin_user }}
+            PasswordAuthentication yes
+            PubkeyAuthentication no
+
+    - name: Перезапустить sshd
+      service:
+        name: ssh
+        state: restarted

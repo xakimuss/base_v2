@@ -1,0 +1,35 @@
+---
+    - name: Отключить все swap
+      command: swapoff -a
+      ignore_errors: true
+
+    - name: Удалить старый swap-файл, если есть
+      file:
+        path: /swapfile
+        state: absent
+
+    - name: Создать swap файл 16G с помощью dd
+      command: dd if=/dev/zero of=/swapfile bs=1M count=16384
+      args:
+        creates: /swapfile
+
+    - name: Установить правильные права на swap файл
+      file:
+        path: /swapfile
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Инициализировать swap пространство
+      command: mkswap /swapfile
+
+    - name: Включить swap
+      command: swapon /swapfile
+
+    - name: Добавить swap в /etc/fstab (если ещё нет)
+      mount:
+        name: swap
+        src: /swapfile
+        fstype: swap
+        opts: sw
+        state: present
